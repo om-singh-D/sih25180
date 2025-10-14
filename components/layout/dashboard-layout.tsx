@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Upload, Settings, LogOut, FileText, Clock, CheckCircle, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, Upload, Settings, LogOut, FileText, Clock, CheckCircle, TrendingUp, Microscope } from 'lucide-react'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -29,12 +29,12 @@ export function DashboardLayout({ children, userName, userRole, onLogout, stats 
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">IR</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+              <Microscope className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Intelli-Review</h1>
-              <p className="text-xs text-gray-400">{userRole === 'naccr' ? 'NACCR Panel' : 'User Portal'}</p>
+              <h1 className="text-lg font-bold">Project DARPAN</h1>
+              <p className="text-xs text-gray-400">{userRole === 'naccr' ? 'NaCCER Panel' : 'User Portal'}</p>
             </div>
           </div>
         </div>

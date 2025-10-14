@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Shield, ArrowRight } from 'lucide-react'
+import { User, Shield, ArrowRight, Microscope } from 'lucide-react'
 import { apiClient, User as UserType } from '@/lib/api-client'
 
 interface LoginProps {
@@ -50,12 +50,15 @@ export function Login({ onLogin }: LoginProps) {
         transition={{ duration: 0.5 }}
       >
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-10 h-10 text-blue-600" />
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Microscope className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Proposal Analysis System
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Project DARPAN
           </h1>
+          <p className="text-sm text-blue-600 font-semibold mb-3">
+            Reflecting True Merit
+          </p>
           <p className="text-gray-600">
             Select your role to continue
           </p>
