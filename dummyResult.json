@@ -1,0 +1,16 @@
+{
+  "score": 88,
+  "summary": "This proposal introduces a novel technique for methane capture using a graphene-based filter, showing significant potential for reducing greenhouse gas emissions in underground mines.",
+  "noveltyAnalysis": {
+    "isNovel": true,
+    "justification": "Introduces 'graphene-based filtration,' a technique not found in 95% of past 'Mine Safety' proposals.",
+    "similarProjects": [
+      { "id": "PROJ-045", "title": "Advanced Carbon Sequestration", "similarity": "65%" },
+      { "id": "PROJ-112", "title": "Air Quality Monitoring Systems", "similarity": "58%" }
+    ]
+  },
+  "financialAnalysis": {
+    "isCompliant": true,
+    "justification": "The budget of ₹45 Lakhs is 10% below the average for similar projects, indicating high cost-effectiveness."
+  }
+}
