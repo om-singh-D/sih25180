@@ -14,7 +14,7 @@ interface EnrichedProposal extends Proposal {
   userEmail?: string
 }
 
-export function NACCRDashboard({ userName }: { userName: string }) {
+export function NACCRDashboard({ userName, onLogout }: { userName: string; onLogout: () => void }) {
   const [proposals, setProposals] = useState<EnrichedProposal[]>([])
   const [filteredProposals, setFilteredProposals] = useState<EnrichedProposal[]>([])
   const [searchTerm, setSearchTerm] = useState('')
