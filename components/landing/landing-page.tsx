@@ -11,9 +11,10 @@ import { ReactNode } from 'react'
 
 interface LandingPageProps {
   onGetStarted: () => void
+  onSignup?: () => void
 }
 
-export function LandingPage({ onGetStarted }: LandingPageProps) {
+export function LandingPage({ onGetStarted, onSignup }: LandingPageProps) {
   const faqItems = [
     {
       id: 'item-1',
@@ -57,13 +58,23 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                 <span className="text-xs text-muted-foreground">Reflecting True Merit</span>
               </div>
             </div>
-            <Button
-              onClick={onGetStarted}
-              variant="ghost"
-              className="border"
-            >
-              Sign In
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={onGetStarted}
+                variant="ghost"
+                className="border"
+              >
+                Sign In
+              </Button>
+              {onSignup && (
+                <Button
+                  onClick={onSignup}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:shadow-lg"
+                >
+                  Sign Up
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>

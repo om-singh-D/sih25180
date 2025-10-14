@@ -8,9 +8,10 @@ import { apiClient, User as UserType } from '@/lib/api-client'
 interface LoginProps {
   onLogin: (user: UserType, token: string) => void
   onBack?: () => void
+  onSwitchToSignup?: () => void
 }
 
-export function Login({ onLogin, onBack }: LoginProps) {
+export function Login({ onLogin, onBack, onSwitchToSignup }: LoginProps) {
   const [users, setUsers] = useState<UserType[]>([])
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -145,6 +146,21 @@ export function Login({ onLogin, onBack }: LoginProps) {
             </>
           )}
         </button>
+
+        {/* Switch to Signup */}
+        {onSwitchToSignup && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <button
+                onClick={onSwitchToSignup}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Sign up here
+              </button>
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 text-center space-y-2">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">

@@ -1,11 +1,19 @@
-// Simple authentication system for prototype
-// In a real app, you'd use proper JWT tokens, sessions, etc.
+// Authentication system supporting both mock tokens (demo) and real JWT tokens
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key-change-in-production'
 
 export interface User {
   id: string;
   name: string;
   role: 'user' | 'naccr';
   email: string;
+}
+
+interface JWTPayload {
+  userId: string
+  email: string
+  role: 'user' | 'naccr'
 }
 
 // Mock users for demo
@@ -35,11 +43,25 @@ export function getUserFromToken(authHeader: string | null): User | null {
     return null;
   }
   
-  // In a real app, you'd verify the JWT token here
-  // For demo purposes, we'll use simple token format: "Bearer userId"
   const token = authHeader.replace('Bearer ', '');
   
-  return users.find(user => user.id === token) || null;
+  // Try to verify as JWT token first (for real MongoDB users)
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
+    return {
+      id: decoded.userId,
+      name: decoded.email.split('@')[0], // Extract name from email
+      email: decoded.email,
+      role: decoded.role
+    }
+  } catch (jwtError) {
+    // If JWT verification fails, try mock user lookup (for demo)
+    const mockUser = users.find(user => user.id === token)
+    if (mockUser) {
+      return mockUser
+    }
+    return null
+  }
 }
 
 export function generateMockToken(userId: string): string {

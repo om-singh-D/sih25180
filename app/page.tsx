@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import { LandingPage } from '@/components/landing/landing-page'
 import { Login } from '@/components/auth/login'
+import { Signup } from '@/components/auth/signup'
 import { EnhancedUserDashboard } from '@/components/dashboard/enhanced-user-dashboard'
 import { NACCRDashboard } from '@/components/dashboard/naccr-dashboard'
 import { User } from '@/lib/api-client'
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<'landing' | 'login' | 'dashboard'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'login' | 'signup' | 'dashboard'>('landing')
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
@@ -28,6 +29,10 @@ export default function Home() {
 
   const handleGetStarted = () => {
     setCurrentView('login')
+  }
+
+  const handleSignup = () => {
+    setCurrentView('signup')
   }
 
   const handleLogin = (user: User, authToken: string) => {
@@ -58,12 +63,30 @@ export default function Home() {
     setCurrentView('landing')
   }
 
+  const handleSwitchToLogin = () => {
+    setCurrentView('login')
+  }
+
+  const handleSwitchToSignup = () => {
+    setCurrentView('signup')
+  }
+
   if (currentView === 'landing') {
-    return <LandingPage onGetStarted={handleGetStarted} />
+    return <LandingPage onGetStarted={handleGetStarted} onSignup={handleSignup} />
+  }
+
+  if (currentView === 'signup') {
+    return (
+      <Signup 
+        onSignup={handleLogin} 
+        onBack={handleBackToLanding}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
+    )
   }
 
   if (currentView === 'login' || !currentUser || !token) {
-    return <Login onLogin={handleLogin} onBack={handleBackToLanding} />
+    return <Login onLogin={handleLogin} onBack={handleBackToLanding} onSwitchToSignup={handleSwitchToSignup} />
   }
 
   return (
