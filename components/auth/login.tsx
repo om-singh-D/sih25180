@@ -131,9 +131,19 @@ export function Login({ onLogin }: LoginProps) {
           )}
         </button>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-2">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-800 font-medium mb-1">
+              ⚠️ Prototype Demo Accounts
+            </p>
+            <p className="text-xs text-blue-700 leading-relaxed">
+              These are sample accounts for demonstration purposes only. 
+              The production system implements enterprise-grade authentication 
+              with JWT tokens, OAuth 2.0, and multi-factor authentication.
+            </p>
+          </div>
           <p className="text-xs text-gray-500">
-            This is a prototype demo system
+            Powered by AI • Built for Innovation
           </p>
         </div>
       </motion.div>
