@@ -69,50 +69,62 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       </header>
 
       {/* Hero Section */}
-      <section className="pb-24 pt-12 md:pb-32 lg:pb-56 lg:pt-44">
-        <div className="relative mx-auto flex max-w-6xl flex-col px-6 lg:block">
-          <motion.div
-            className="mx-auto max-w-lg text-center lg:ml-0 lg:w-1/2 lg:text-left"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-block mb-4 px-4 py-2 bg-blue-50 dark:bg-blue-950 rounded-full">
-              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">दर्पण - The Mirror of Merit</span>
-            </div>
-            <h1 className="mt-8 max-w-2xl text-balance text-5xl font-bold md:text-6xl lg:mt-16 xl:text-7xl">
-              From Months to Minutes: The Future of R&D Evaluation
-            </h1>
-            <p className="mt-8 max-w-2xl text-pretty text-lg text-muted-foreground leading-relaxed">
-              Project DARPAN acts as a digital mirror for R&D evaluation. Using state-of-the-art RAG technology, 
-              it reflects the true merit of each proposal, helping NaCCER accelerate innovation with data-driven clarity.
-            </p>
+      <section className="pb-24 pt-4 md:pb-32 md:pt-8 lg:pb-48 lg:pt-12">
+        <div className="relative mx-auto max-w-6xl px-6">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left Content */}
+            <motion.div
+              className="text-center lg:text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="inline-block mb-6 px-4 py-2 bg-blue-50 dark:bg-blue-950 rounded-full">
+                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">दर्पण - The Mirror of Merit</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                From Months to Minutes: The Future of R&D Evaluation
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8">
+                Project DARPAN acts as a digital mirror for R&D evaluation. Using state-of-the-art RAG technology, 
+                it reflects the true merit of each proposal, helping NaCCER accelerate innovation with data-driven clarity.
+              </p>
 
-            <div className="mt-12 flex flex-col items-center justify-center gap-2 sm:flex-row lg:justify-start">
-              <Button
-                onClick={onGetStarted}
-                size="lg"
-                className="px-6 text-base bg-gradient-to-r from-blue-600 to-cyan-500 hover:shadow-xl shadow-lg"
-              >
-                <span className="text-nowrap">Launch the Dashboard</span>
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-              <Button
-                size="lg"
-                variant="ghost"
-                className="px-6 text-base border"
-              >
-                <span className="text-nowrap">Watch Demo</span>
-              </Button>
-            </div>
-          </motion.div>
-          <Image
-            className="-z-10 order-first ml-auto h-56 w-full object-cover sm:h-96 lg:absolute lg:inset-0 lg:-right-20 lg:-top-96 lg:order-last lg:h-max lg:w-2/3 lg:object-contain opacity-60"
-            src="/hero section.jpg"
-            alt="DARPAN - AI Analysis Visualization"
-            height="4000"
-            width="3000"
-          />
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button
+                  onClick={onGetStarted}
+                  size="lg"
+                  className="px-6 text-base bg-gradient-to-r from-blue-600 to-cyan-500 hover:shadow-xl shadow-lg"
+                >
+                  <span className="text-nowrap">Launch the Dashboard</span>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="px-6 text-base border"
+                >
+                  <span className="text-nowrap">Watch Demo</span>
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Right Image */}
+            <motion.div
+              className="relative h-[400px] md:h-[500px] lg:h-[600px]"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Image
+                className="object-contain w-full h-full rounded-lg"
+                src="/hero%20section.jpg"
+                alt="DARPAN - AI Analysis Visualization"
+                fill
+                priority
+              />
+            </motion.div>
+          </div>
         </div>
       </section>
 

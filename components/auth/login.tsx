@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Shield, ArrowRight, Microscope } from 'lucide-react'
+import { User, Shield, ArrowRight, Microscope, ArrowLeft } from 'lucide-react'
 import { apiClient, User as UserType } from '@/lib/api-client'
 
 interface LoginProps {
   onLogin: (user: UserType, token: string) => void
+  onBack?: () => void
 }
 
-export function Login({ onLogin }: LoginProps) {
+export function Login({ onLogin, onBack }: LoginProps) {
   const [users, setUsers] = useState<UserType[]>([])
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -49,6 +50,17 @@ export function Login({ onLogin }: LoginProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Back Button */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Home</span>
+          </button>
+        )}
+
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Microscope className="w-10 h-10 text-white" />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, Filter, Search, Users, Clock, CheckCircle } from 'lucide-react'
+import { Eye, Filter, Search, Users, Clock, CheckCircle, LogOut, Microscope } from 'lucide-react'
 import { apiClient, Proposal } from '@/lib/api-client'
 import { StatusBadge } from '../ui/status-badge'
 import { ScoreCircle } from '../ui/score-circle'
@@ -120,16 +120,47 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
   }, [])
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          NACCR Administrative Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Monitor and review all proposal submissions
-        </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                <Microscope className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">Project DARPAN</h1>
+                <p className="text-xs text-gray-600">NaCCER Administrative Panel</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">{userName}</p>
+                <p className="text-xs text-gray-600">Administrator</p>
+              </div>
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-gray-200"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-sm font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Administrative Dashboard
+          </h2>
+          <p className="text-gray-600">
+            Monitor and review all proposal submissions
+          </p>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -359,6 +390,7 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
         onClose={() => setShowResultModal(false)}
         result={selectedResult}
       />
+      </div>
     </div>
   )
 }

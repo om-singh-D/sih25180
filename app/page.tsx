@@ -54,12 +54,16 @@ export default function Home() {
     }
   }
 
+  const handleBackToLanding = () => {
+    setCurrentView('landing')
+  }
+
   if (currentView === 'landing') {
     return <LandingPage onGetStarted={handleGetStarted} />
   }
 
   if (currentView === 'login' || !currentUser || !token) {
-    return <Login onLogin={handleLogin} />
+    return <Login onLogin={handleLogin} onBack={handleBackToLanding} />
   }
 
   return (
