@@ -4,7 +4,7 @@ import { getUserFromToken } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   // Initialize sample data
   await initializeSampleData();
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { jobId } = params;
+    const { jobId } = await params;
     const job = await getJobById(jobId);
     
     if (!job) {
