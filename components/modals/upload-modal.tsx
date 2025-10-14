@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, File, CheckCircle } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
+import { ProcessingStages } from '../upload/processing-stages'
 
 interface UploadModalProps {
   isOpen: boolean
@@ -17,6 +18,10 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadComplete, setUploadComplete] = useState(false)
+  const [showProcessing, setShowProcessing] = useState(false)
+  const [jobId, setJobId] = useState<string | null>(null)
+  const [processingStatus, setProcessingStatus] = useState<'processing' | 'complete' | 'failed'>('processing')
+  const [watchProcessing, setWatchProcessing] = useState(true) // New state for toggle
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -58,9 +63,17 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
       await onUpload(file, title.trim())
       setUploadComplete(true)
       
-      setTimeout(() => {
-        handleClose()
-      }, 1500)
+      if (watchProcessing) {
+        // Show processing stages after upload completes
+        setTimeout(() => {
+          setShowProcessing(true)
+        }, 1000)
+      } else {
+        // Close immediately for background processing
+        setTimeout(() => {
+          handleClose()
+        }, 1500)
+      }
     } catch (error) {
       console.error('Upload failed:', error)
       alert('Upload failed. Please try again.')
@@ -70,12 +83,39 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
     }
   }
 
+  // Poll for job status
+  useEffect(() => {
+    if (!showProcessing || !jobId) return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        // This would call your status API
+        // For now, we'll simulate it completing after all stages
+        // In production, you'd check: await apiClient.getProposalStatus(jobId)
+      } catch (error) {
+        console.error('Failed to poll status:', error)
+      }
+    }, 3000)
+
+    return () => clearInterval(pollInterval)
+  }, [showProcessing, jobId])
+
+  const handleProcessingComplete = () => {
+    setTimeout(() => {
+      handleClose()
+    }, 2000)
+  }
+
   const handleClose = () => {
-    if (!isUploading) {
+    if (!isUploading && processingStatus !== 'processing') {
       setFile(null)
       setTitle('')
       setUploadProgress(0)
       setUploadComplete(false)
+      setShowProcessing(false)
+      setJobId(null)
+      setProcessingStatus('processing')
+      setWatchProcessing(true) // Reset to default
       onClose()
     }
   }
@@ -119,7 +159,12 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {!uploadComplete ? (
+              {showProcessing ? (
+                <ProcessingStages 
+                  status={processingStatus}
+                  onComplete={handleProcessingComplete}
+                />
+              ) : !uploadComplete ? (
                 <>
                   {/* Title Input */}
                   <div>
@@ -217,6 +262,43 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
                     </motion.div>
                   )}
 
+                  {/* Processing Options Toggle */}
+                  {!isUploading && file && title.trim() && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm">
+                          <p className="font-medium text-gray-900 dark:text-gray-100">
+                            {watchProcessing ? '👁️ Watch Processing' : '⚡ Background Processing'}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                            {watchProcessing 
+                              ? 'See the AI analysis pipeline in action with animations'
+                              : 'Upload and close - we\'ll notify you when complete'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setWatchProcessing(!watchProcessing)}
+                        className={`
+                          relative inline-flex h-8 w-14 items-center rounded-full transition-colors
+                          ${watchProcessing ? 'bg-blue-500' : 'bg-gray-300'}
+                        `}
+                      >
+                        <span
+                          className={`
+                            inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform
+                            ${watchProcessing ? 'translate-x-7' : 'translate-x-1'}
+                          `}
+                        />
+                      </button>
+                    </motion.div>
+                  )}
+
                   {/* Actions */}
                   <div className="flex justify-end gap-3 pt-4">
                     <button
@@ -246,7 +328,12 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
                     <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Upload Successful!</h3>
-                  <p className="text-gray-600">Your proposal is now being analyzed...</p>
+                  <p className="text-gray-600">
+                    {watchProcessing 
+                      ? 'Your proposal is now being analyzed...'
+                      : 'Your proposal is being analyzed in the background. Check your dashboard for updates!'
+                    }
+                  </p>
                 </motion.div>
               )}
             </div>

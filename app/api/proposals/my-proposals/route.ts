@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getJobsByUserId, initializeSampleData } from '@/lib/db';
 import { getUserFromToken } from '@/lib/auth';
+import { getProposalsByUser } from '@/lib/proposals-db';
 
 export async function GET(request: NextRequest) {
-  // Initialize sample data
-  await initializeSampleData();
-  
   try {
     const authHeader = request.headers.get('authorization');
     const user = getUserFromToken(authHeader);
@@ -18,9 +15,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Only users can access this endpoint' }, { status: 403 });
     }
     
-    const jobs = await getJobsByUserId(user.id);
+    const proposals = await getProposalsByUser(user.id);
     
-    return NextResponse.json({ proposals: jobs });
+    console.log(`[my-proposals] User ${user.id} has ${proposals.length} proposals`);
+    if (proposals.length > 0) {
+      console.log('[my-proposals] Sample proposal:', {
+        jobId: proposals[0].jobId,
+        title: proposals[0].title,
+        status: proposals[0].status,
+      });
+    }
+    
+    // Transform to match frontend expectations
+    const formattedProposals = proposals.map(p => ({
+      id: p.jobId,
+      jobId: p.jobId,
+      title: p.title,
+      filename: p.fileName,
+      status: p.status,
+      createdAt: p.createdAt.toISOString(),
+    }));
+    
+    return NextResponse.json({ proposals: formattedProposals });
   } catch (error) {
     console.error('Get my proposals error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -12,6 +12,10 @@ import { LoadingSpinner } from '../ui/loading'
 interface EnrichedProposal extends Proposal {
   userName?: string
   userEmail?: string
+  overallScore?: number
+  noveltyScore?: number
+  technicalMeritScore?: number
+  cluster?: string
 }
 
 export function NACCRDashboard({ userName, onLogout }: { userName: string; onLogout: () => void }) {
@@ -19,6 +23,7 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
   const [filteredProposals, setFilteredProposals] = useState<EnrichedProposal[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'processing' | 'complete'>('all')
+  const [clusterFilter, setClusterFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'status'>('date')
   const [selectedResult, setSelectedResult] = useState<any>(null)
   const [showResultModal, setShowResultModal] = useState(false)
@@ -77,6 +82,11 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
       filtered = filtered.filter(proposal => proposal.status === statusFilter)
     }
 
+    // Apply cluster filter
+    if (clusterFilter !== 'all') {
+      filtered = filtered.filter(proposal => (proposal as any).cluster === clusterFilter)
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -92,7 +102,7 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
     })
 
     setFilteredProposals(filtered)
-  }, [proposals, searchTerm, statusFilter, sortBy])
+  }, [proposals, searchTerm, statusFilter, clusterFilter, sortBy])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -113,7 +123,29 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
     return { total, processing, complete, uniqueUsers }
   }
 
+  const getTopProposals = () => {
+    return proposals
+      .filter((p): p is EnrichedProposal & { overallScore: number } => 
+        p.status === 'complete' && p.overallScore != null
+      )
+      .sort((a, b) => b.overallScore - a.overallScore)
+      .slice(0, 5)
+  }
+
+  const getClusterDistribution = () => {
+    const clusterMap = new Map<string, number>()
+    proposals.forEach(p => {
+      const cluster = (p as any).cluster || 'Other'
+      clusterMap.set(cluster, (clusterMap.get(cluster) || 0) + 1)
+    })
+    return Array.from(clusterMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+  }
+
   const stats = getStats()
+  const topProposals = getTopProposals()
+  const clusterDistribution = getClusterDistribution()
 
   useEffect(() => {
     fetchProposals()
@@ -160,6 +192,131 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
           <p className="text-gray-600">
             Monitor and review all proposal submissions
           </p>
+        </div>
+
+        {/* AI Recommendations & Clusters */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* AI Recommendations Panel */}
+          <motion.div
+            className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl shadow-lg border-2 border-purple-200 p-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-purple-500 rounded-lg">
+                <Microscope className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">AI Recommendations</h3>
+                <p className="text-sm text-gray-600">Top-ranked proposals by AI analysis</p>
+              </div>
+            </div>
+            
+            {topProposals.length > 0 ? (
+              <div className="space-y-3">
+                {topProposals.map((proposal, index) => (
+                  <motion.div
+                    key={proposal.id}
+                    className="bg-white rounded-lg p-4 shadow-sm border border-purple-100 hover:shadow-md transition-shadow"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="flex items-center justify-center w-6 h-6 bg-purple-500 text-white text-xs font-bold rounded-full">
+                            {index + 1}
+                          </span>
+                          <h4 className="font-semibold text-gray-900 text-sm truncate">
+                            {proposal.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">by {proposal.userName}</p>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                            Score: {proposal.overallScore}/100
+                          </span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                            Novelty: {proposal.noveltyScore}/100
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleViewResult(proposal.id)}
+                        className="shrink-0 p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm">No completed analyses yet</p>
+                <p className="text-xs mt-1">Recommendations will appear as proposals are analyzed</p>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Cluster Distribution Panel */}
+          <motion.div
+            className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl shadow-lg border-2 border-cyan-200 p-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-cyan-500 rounded-lg">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Research Clusters</h3>
+                <p className="text-sm text-gray-600">Proposal distribution by domain</p>
+              </div>
+            </div>
+            
+            {clusterDistribution.length > 0 ? (
+              <div className="space-y-3">
+                {clusterDistribution.slice(0, 7).map((cluster, index) => {
+                  const percentage = (cluster.count / proposals.length * 100).toFixed(1)
+                  const colors = [
+                    'bg-cyan-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 
+                    'bg-rose-500', 'bg-orange-500', 'bg-amber-500'
+                  ]
+                  return (
+                    <motion.div
+                      key={cluster.name}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{cluster.name}</span>
+                        <span className="text-sm font-bold text-gray-900">{cluster.count}</span>
+                      </div>
+                      <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full ${colors[index % colors.length]}`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">{percentage}% of total</div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm">No proposals yet</p>
+                <p className="text-xs mt-1">Clusters will form as proposals are submitted</p>
+              </div>
+            )}
+          </motion.div>
         </div>
 
       {/* Stats Cards */}
@@ -259,6 +416,19 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
             </select>
 
             <select
+              value={clusterFilter}
+              onChange={(e) => setClusterFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-cyan-50"
+            >
+              <option value="all">All Clusters</option>
+              {clusterDistribution.map(cluster => (
+                <option key={cluster.name} value={cluster.name}>
+                  {cluster.name} ({cluster.count})
+                </option>
+              ))}
+            </select>
+
+            <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -311,6 +481,9 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
                     Submitted
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cluster
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Score
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -354,8 +527,13 @@ export function NACCRDashboard({ userName, onLogout }: { userName: string; onLog
                       {formatDate(proposal.submittedAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {proposal.status === 'complete' ? (
-                        <ScoreCircle score={88} size="sm" />
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-cyan-100 text-cyan-800">
+                        {proposal.cluster || 'Other'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {proposal.status === 'complete' && proposal.overallScore != null ? (
+                        <ScoreCircle score={proposal.overallScore} size="sm" />
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}

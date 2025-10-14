@@ -5,10 +5,11 @@ interface Job {
   id: string;
   userId: string;
   title: string;
-  status: 'processing' | 'complete';
+  status: 'processing' | 'complete' | 'failed';
   submittedAt: Date;
   completedAt?: Date;
   filename: string;
+  analysis?: any; // Store AI analysis results
 }
 
 // In-memory storage
@@ -29,13 +30,16 @@ export async function createJob(jobId: string, data: { userId: string; title: st
   return job;
 }
 
-export async function updateJobStatus(jobId: string, status: 'processing' | 'complete'): Promise<Job | null> {
+export async function updateJobStatus(jobId: string, status: 'processing' | 'complete' | 'failed', analysis?: any): Promise<Job | null> {
   const jobIndex = jobs.findIndex(job => job.id === jobId);
   if (jobIndex === -1) return null;
   
   jobs[jobIndex].status = status;
   if (status === 'complete') {
     jobs[jobIndex].completedAt = new Date();
+    if (analysis) {
+      jobs[jobIndex].analysis = analysis;
+    }
   }
   
   return jobs[jobIndex];

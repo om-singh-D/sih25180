@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getJobById, initializeSampleData } from '@/lib/db';
 import { getUserFromToken } from '@/lib/auth';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { getProposalByJobId } from '@/lib/proposals-db';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
-  // Initialize sample data
-  await initializeSampleData();
-  
   try {
     const authHeader = request.headers.get('authorization');
     const user = getUserFromToken(authHeader);
@@ -20,33 +15,37 @@ export async function GET(
     }
     
     const { jobId } = await params;
-    const job = await getJobById(jobId);
+    console.log('Getting result for jobId:', jobId, 'User:', user.id);
     
-    if (!job) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    const proposal = await getProposalByJobId(jobId);
+    
+    if (!proposal) {
+      console.error('Proposal not found for jobId:', jobId);
+      return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
     
-    // Check if user has permission to view this job
-    if (user.role === 'user' && job.userId !== user.id) {
+    console.log('Found proposal:', { status: proposal.status, hasAnalysis: !!proposal.analysis });
+    
+    // Check if user has permission to view this proposal
+    if (user.role === 'user' && proposal.userId !== user.id) {
+      console.error('User permission denied. Proposal userId:', proposal.userId, 'Request userId:', user.id);
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     
-    // Check if job is complete
-    if (job.status !== 'complete') {
-      return NextResponse.json({ error: 'Job not yet complete' }, { status: 400 });
+    // Check if proposal is complete
+    if (proposal.status !== 'complete') {
+      console.log('Proposal not complete yet. Status:', proposal.status);
+      return NextResponse.json({ error: 'Analysis not yet complete' }, { status: 400 });
     }
     
-    // Read dummy result data
-    const dummyResultPath = join(process.cwd(), 'dummyResult.json');
-    const dummyResult = JSON.parse(readFileSync(dummyResultPath, 'utf8'));
-    
+    // Return real Gemini analysis results
     return NextResponse.json({
-      jobId: job.id,
-      title: job.title,
-      filename: job.filename,
-      submittedAt: job.submittedAt,
-      completedAt: job.completedAt,
-      result: dummyResult
+      jobId: proposal.jobId,
+      title: proposal.title,
+      filename: proposal.fileName,
+      submittedAt: proposal.createdAt.toISOString(),
+      completedAt: proposal.updatedAt.toISOString(),
+      result: proposal.analysis
     });
   } catch (error) {
     console.error('Get job result error:', error);

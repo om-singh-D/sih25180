@@ -72,7 +72,8 @@ class ApiClient {
     };
 
     if (token) {
-      headers.Authorization = token;
+      // Ensure token is sent with Bearer prefix
+      headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     }
 
     const response = await fetch(`${API_BASE}${url}`, {
@@ -111,7 +112,8 @@ class ApiClient {
     const token = this.getToken();
     const headers: Record<string, string> = {};
     if (token) {
-      headers.Authorization = token;
+      // Ensure token is sent with Bearer prefix
+      headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     }
 
     const response = await fetch(`${API_BASE}/proposals/upload`, {

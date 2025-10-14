@@ -10,6 +10,7 @@ import { DetailedReportModal } from '../modals/detailed-report-modal'
 import { StatusBadge } from '../ui/status-badge'
 import { ScoreCircle } from '../ui/score-circle'
 import { LoadingSpinner } from '../ui/loading'
+import { Toast } from '../ui/toast'
 
 export function EnhancedUserDashboard({ userName, onLogout }: { userName: string; onLogout: () => void }) {
   const [proposals, setProposals] = useState<Proposal[]>([])
@@ -19,13 +20,29 @@ export function EnhancedUserDashboard({ userName, onLogout }: { userName: string
   const [loadingResults, setLoadingResults] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'status'>('date')
+  const [toastMessage, setToastMessage] = useState('')
+  const [showToast, setShowToast] = useState(false)
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success')
 
   // Polling for status updates
   useEffect(() => {
     const interval = setInterval(async () => {
       const processingProposals = proposals.filter(p => p.status === 'processing')
       if (processingProposals.length > 0) {
+        const oldProposals = proposals
         await fetchProposals()
+        
+        // Check if any proposal just completed
+        const response = await apiClient.getMyProposals()
+        response.proposals.forEach((newProposal: Proposal) => {
+          const oldProposal = oldProposals.find(p => p.id === newProposal.id)
+          if (oldProposal?.status === 'processing' && newProposal.status === 'complete') {
+            // Show notification
+            setToastMessage(`🎉 Analysis complete for "${newProposal.title}"!`)
+            setToastType('success')
+            setShowToast(true)
+          }
+        })
       }
     }, 2000)
 
@@ -48,13 +65,15 @@ export function EnhancedUserDashboard({ userName, onLogout }: { userName: string
 
   const handleViewResult = async (jobId: string) => {
     setLoadingResults(jobId)
+    console.log('[Dashboard] Viewing result for jobId:', jobId);
     try {
       const result = await apiClient.getProposalResult(jobId)
+      console.log('[Dashboard] Got result:', result);
       setSelectedResult(result)
       setShowResultModal(true)
     } catch (error) {
       console.error('Failed to fetch result:', error)
-      alert('Failed to load results. Please try again.')
+      alert('Failed to load results. The proposal may still be processing or there was an error. Please try again.')
     } finally {
       setLoadingResults(null)
     }
@@ -276,6 +295,14 @@ export function EnhancedUserDashboard({ userName, onLogout }: { userName: string
         isOpen={showResultModal}
         onClose={() => setShowResultModal(false)}
         result={selectedResult}
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
       />
     </DashboardLayout>
   )
