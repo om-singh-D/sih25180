@@ -114,6 +114,7 @@ export function LandingPage({ onGetStarted, onSignup }: LandingPageProps) {
                   size="lg"
                   variant="ghost"
                   className="px-6 text-base border"
+                  onClick={() => window.open('https://youtu.be/gWUcvw0YgXs', '_blank')}
                 >
                   <span className="text-nowrap">Watch Demo</span>
                 </Button>
@@ -599,6 +600,7 @@ export function LandingPage({ onGetStarted, onSignup }: LandingPageProps) {
                 size="lg"
                 variant="outline"
                 className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm text-base px-8 py-6 text-lg font-semibold"
+                onClick={() => window.open('https://youtu.be/gWUcvw0YgXs', '_blank')}
               >
                 Schedule a Demo
               </Button>

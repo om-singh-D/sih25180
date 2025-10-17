@@ -100,6 +100,23 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
     return () => clearInterval(pollInterval)
   }, [showProcessing, jobId])
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isUploading) {
+        handleClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, isUploading])
+
   const handleProcessingComplete = () => {
     setTimeout(() => {
       handleClose()
@@ -107,17 +124,17 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   }
 
   const handleClose = () => {
-    if (!isUploading && processingStatus !== 'processing') {
-      setFile(null)
-      setTitle('')
-      setUploadProgress(0)
-      setUploadComplete(false)
-      setShowProcessing(false)
-      setJobId(null)
-      setProcessingStatus('processing')
-      setWatchProcessing(true) // Reset to default
-      onClose()
-    }
+    // Allow closing anytime now - processing continues in background
+    setFile(null)
+    setTitle('')
+    setUploadProgress(0)
+    setUploadComplete(false)
+    setShowProcessing(false)
+    setJobId(null)
+    setProcessingStatus('processing')
+    setWatchProcessing(true) // Reset to default
+    setIsUploading(false) // Reset uploading state
+    onClose()
   }
 
   return (
@@ -129,7 +146,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={!isUploading ? handleClose : undefined}
           />
 
           <motion.div
@@ -144,26 +161,46 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Upload className="w-6 h-6 text-white" />
-                  <h2 className="text-xl font-bold text-white">Upload New Proposal</h2>
+                  <h2 className="text-xl font-bold text-white">
+                    {showProcessing ? 'Processing Your Proposal' : 'Upload New Proposal'}
+                  </h2>
                 </div>
+                {/* Close button - always visible except during active upload */}
                 {!isUploading && (
                   <button
                     onClick={handleClose}
-                    className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
+                    className="p-2 text-white hover:bg-white/20 rounded-full transition-colors group"
+                    title={showProcessing ? 'Close (processing continues in background)' : 'Close'}
                   >
                     <X className="w-5 h-5" />
                   </button>
                 )}
               </div>
+              {showProcessing && (
+                <p className="text-white/90 text-sm mt-2">
+                  You can close this and continue working. We'll notify you when it's ready! ✨
+                </p>
+              )}
             </div>
 
             {/* Content */}
             <div className="p-6 space-y-6">
               {showProcessing ? (
-                <ProcessingStages 
-                  status={processingStatus}
-                  onComplete={handleProcessingComplete}
-                />
+                <>
+                  <ProcessingStages 
+                    status={processingStatus}
+                    onComplete={handleProcessingComplete}
+                  />
+                  {/* Background button during processing */}
+                  <div className="flex justify-center gap-3 pt-4">
+                    <button
+                      onClick={handleClose}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                    >
+                      Continue in Background
+                    </button>
+                  </div>
+                </>
               ) : !uploadComplete ? (
                 <>
                   {/* Title Input */}

@@ -10,6 +10,7 @@ export interface ProposalDocument {
   status: 'processing' | 'complete' | 'failed';
   currentStage?: ProcessingStage;
   analysis?: any;
+  errorMessage?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,7 +55,8 @@ export async function updateProposalStage(
 export async function updateProposalStatus(
   jobId: string,
   status: 'processing' | 'complete' | 'failed',
-  analysis?: any
+  analysis?: any,
+  errorMessage?: string
 ): Promise<void> {
   const client = await clientPromise;
   const db = client.db('darpan');
@@ -66,6 +68,10 @@ export async function updateProposalStatus(
   
   if (analysis) {
     updateData.analysis = analysis;
+  }
+  
+  if (errorMessage) {
+    updateData.errorMessage = errorMessage;
   }
   
   await db.collection('proposals').updateOne(

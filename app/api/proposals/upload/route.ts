@@ -30,8 +30,14 @@ async function extractTextFromPDF(fileBuffer: Buffer): Promise<string> {
                   if (textItem.R) {
                     for (const run of textItem.R) {
                       if (run.T) {
-                        // Decode URI encoded text
-                        text += decodeURIComponent(run.T) + ' ';
+                        try {
+                          // Try to decode URI encoded text
+                          text += decodeURIComponent(run.T) + ' ';
+                        } catch (decodeError) {
+                          // If decoding fails, use the raw text
+                          // This handles malformed URI sequences
+                          text += run.T.replace(/%/g, ' ') + ' ';
+                        }
                       }
                     }
                   }
@@ -182,19 +188,24 @@ export async function POST(request: NextRequest) {
     (async () => {
       try {
         console.log(`[${jobId}] Starting PDF processing...`);
+        console.log(`[${jobId}] File name: ${file.name}, size: ${file.size} bytes`);
         await updateProposalStage(jobId, 'upload');
         
         // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
+        console.log(`[${jobId}] Buffer created, size: ${buffer.length} bytes`);
         
         // Stage 1: Extract text from PDF (simulating text embedding preparation)
         console.log(`[${jobId}] Stage 1: Extracting text and preparing embeddings...`);
         await updateProposalStage(jobId, 'embedding');
         const proposalText = await extractTextFromPDF(buffer);
         
+        console.log(`[${jobId}] Extracted text length: ${proposalText.length} characters`);
+        console.log(`[${jobId}] First 200 chars: ${proposalText.substring(0, 200)}`);
+        
         if (!proposalText || proposalText.trim().length < 100) {
-          throw new Error('PDF contains insufficient text content');
+          throw new Error(`PDF contains insufficient text content. Extracted only ${proposalText.trim().length} characters. Minimum required: 100 characters.`);
         }
         
         // Stage 2: Cluster matching (simulated - in production would use vector DB)
@@ -217,7 +228,10 @@ export async function POST(request: NextRequest) {
         
       } catch (error) {
         console.error(`[${jobId}] Processing error:`, error);
-        await updateProposalStatus(jobId, 'failed');
+        console.error(`[${jobId}] Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred during processing';
+        console.log(`[${jobId}] Storing error message: ${errorMessage}`);
+        await updateProposalStatus(jobId, 'failed', undefined, errorMessage);
       }
     })();
     

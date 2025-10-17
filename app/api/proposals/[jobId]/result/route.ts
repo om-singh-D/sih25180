@@ -32,6 +32,18 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     
+    // Handle failed proposals
+    if (proposal.status === 'failed') {
+      console.log('Proposal failed. Error:', proposal.errorMessage);
+      return NextResponse.json({ 
+        error: 'Analysis failed',
+        errorMessage: proposal.errorMessage || 'Unknown error occurred',
+        jobId: proposal.jobId,
+        title: proposal.title,
+        status: 'failed'
+      }, { status: 400 });
+    }
+    
     // Check if proposal is complete
     if (proposal.status !== 'complete') {
       console.log('Proposal not complete yet. Status:', proposal.status);

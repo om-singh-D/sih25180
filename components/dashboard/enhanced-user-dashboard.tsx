@@ -93,9 +93,10 @@ export function EnhancedUserDashboard({ userName, onLogout }: { userName: string
     const total = proposals.length
     const processing = proposals.filter(p => p.status === 'processing').length
     const complete = proposals.filter(p => p.status === 'complete').length
+    const failed = proposals.filter(p => p.status === 'failed').length
     const avgScore = complete > 0 ? 78 : undefined // Mock average
 
-    return { total, processing, complete, avgScore }
+    return { total, processing, complete, failed, avgScore }
   }
 
   const filteredProposals = proposals
@@ -273,6 +274,19 @@ export function EnhancedUserDashboard({ userName, onLogout }: { userName: string
                             )}
                             View Report
                           </motion.button>
+                        )}
+                        {proposal.status === 'failed' && (
+                          <button
+                            onClick={() => {
+                              const errorMsg = (proposal as any).errorMessage || 'Analysis failed. Please try uploading the proposal again.'
+                              setToastMessage(`❌ ${errorMsg}`)
+                              setToastType('error')
+                              setShowToast(true)
+                            }}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"
+                          >
+                            View Error
+                          </button>
                         )}
                       </td>
                     </motion.tr>

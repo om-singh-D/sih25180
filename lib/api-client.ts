@@ -12,11 +12,12 @@ export interface Proposal {
   userId: string;
   title: string;
   filename: string;
-  status: 'processing' | 'complete';
+  status: 'processing' | 'complete' | 'failed';
   submittedAt: string;
   completedAt?: string;
   userName?: string;
   userEmail?: string;
+  errorMessage?: string;
 }
 
 export interface AnalysisResult {

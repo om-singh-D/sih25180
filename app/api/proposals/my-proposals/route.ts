@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       filename: p.fileName,
       status: p.status,
       createdAt: p.createdAt.toISOString(),
+      errorMessage: p.errorMessage,
     }));
     
     return NextResponse.json({ proposals: formattedProposals });

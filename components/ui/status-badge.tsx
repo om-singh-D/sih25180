@@ -2,17 +2,22 @@
 
 import { motion } from 'framer-motion'
 import { LoadingSpinner, PulsingDot } from './loading'
+import { AlertCircle, CheckCircle, Loader } from 'lucide-react'
 
 interface StatusBadgeProps {
-  status: 'processing' | 'complete'
+  status: 'processing' | 'complete' | 'failed'
   animate?: boolean
 }
 
 export function StatusBadge({ status, animate = true }: StatusBadgeProps) {
   const isProcessing = status === 'processing'
+  const isFailed = status === 'failed'
+  const isComplete = status === 'complete'
   
   const badgeClasses = isProcessing
     ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    : isFailed
+    ? 'bg-red-100 text-red-800 border-red-200'
     : 'bg-green-100 text-green-800 border-green-200'
 
   return (
@@ -27,9 +32,14 @@ export function StatusBadge({ status, animate = true }: StatusBadgeProps) {
           <PulsingDot color="#f59e0b" />
           Processing
         </>
+      ) : isFailed ? (
+        <>
+          <AlertCircle className="w-3 h-3" />
+          Failed
+        </>
       ) : (
         <>
-          <div className="w-3 h-3 bg-green-500 rounded-full" />
+          <CheckCircle className="w-3 h-3" />
           Complete
         </>
       )}
